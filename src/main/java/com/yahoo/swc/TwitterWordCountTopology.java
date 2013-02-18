@@ -3,7 +3,9 @@ package com.yahoo.swc;
 import java.util.HashMap;
 
 import com.yahoo.swc.bolt.CountWord;
-import com.yahoo.swc.bolt.EfCountWord;
+import com.yahoo.swc.bolt.EwmaCountWord;
+import com.yahoo.swc.bolt.EfTimeCountWord;
+import com.yahoo.swc.bolt.PrintCount;
 import com.yahoo.swc.bolt.SplitTweet;
 import com.yahoo.swc.spout.TwitterSampleSpout;
 
@@ -20,14 +22,16 @@ import backtype.storm.utils.Utils;
 public class TwitterWordCountTopology {
 	
 	private static final String NORMAL_MODE = "nrml";
-	private static final String EF_MODE = "ef";
+	private static final String EWMA_MODE = "ewma";
+	private static final String EF_TIME_MODE = "eftime";
 	
 	private static final HashMap<String, String> ALLOWED_OPTION = new HashMap<String, String>() {
 		private static final long serialVersionUID = -4689033609960231840L;
 
 		{
 			put(NORMAL_MODE, "for normal counting");
-			put(EF_MODE, "for exponential forgetting counter");
+			put(EWMA_MODE, "for EWMA");
+			put(EF_TIME_MODE, "for exponential forgetting w.r.t time");
 		}
 	};
 		
@@ -67,20 +71,29 @@ public class TwitterWordCountTopology {
 		if(args[0].equals(NORMAL_MODE)){
 			countWordBolt = new CountWord();
 			countWordBoltId = "count_word";
-		}else if (args[0].equals(EF_MODE)){
-			countWordBolt = new EfCountWord();
-			countWordBoltId = "ef_count_word";
+		}else if (args[0].equals(EWMA_MODE)){
+			countWordBolt = new EwmaCountWord();
+			countWordBoltId = "ewma_count_word";
+		}else if (args[0].equals(EF_TIME_MODE)){
+			countWordBolt = new EfTimeCountWord();
+			countWordBoltId = "ef_time_count_word";
 		}else{
 			System.out.println(args[0] + " is a valid option but not yet implemented");
 			return;
 		}
 
-		int countWordBoltParallelism = 20;
+		int countWordBoltParallelism = 10;
 		builder.setBolt(countWordBoltId, countWordBolt, countWordBoltParallelism)
 				.fieldsGrouping(splitTweetBoltId, new Fields("word"));
 		
+		//use PrinterCount Bolt to print the result
+		String printerBoltId = "printer_bolt";
+		int printerBoltPar = 10;
+		builder.setBolt(printerBoltId, new PrintCount(), printerBoltPar)
+			.fieldsGrouping(countWordBoltId, new Fields("word"));
+		
 		Config conf = new Config();
-		conf.setDebug(true);
+		conf.setDebug(false);
 		
 		if(args != null && args.length > 1){
 			conf.setNumWorkers(3);
@@ -93,11 +106,10 @@ public class TwitterWordCountTopology {
 			LocalCluster cluster = new LocalCluster();
 			cluster.submitTopology(topologyName , conf, builder.createTopology());
 			
-			Utils.sleep(10000);
+			Utils.sleep(30*1000);
 			
 			cluster.killTopology(topologyName);
 			cluster.shutdown();			
 		}
 	}
-
 }

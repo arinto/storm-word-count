@@ -11,13 +11,13 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
-public class EfCountWord extends BaseRichBolt {
+public class EwmaCountWord extends BaseRichBolt {
 	
 	private static final long serialVersionUID = -7650439263074510377L;
 	
 	private OutputCollector _outputCollector = null;
 	private HashMap<String, Double> _efCounter = null;
-	private double _alpha = 0.1;
+	private double _alpha = 0.9;
 	
 	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context,
 			OutputCollector collector) {
@@ -32,13 +32,13 @@ public class EfCountWord extends BaseRichBolt {
 		if(efCount == null){
 			efCount = 0.0;
 		}
-		efCount = 1.0 + (1.0 - _alpha)*efCount;
+		efCount = _alpha*(efCount + 1.0) + (1.0 - _alpha)*efCount;
 		_efCounter.put(word, efCount);
 		_outputCollector.emit(new Values(word, efCount));
 	}
 
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("word", "efcount"));		
+		declarer.declare(new Fields("word", "count"));		
 	}
 
 }
