@@ -11,7 +11,7 @@ import backtype.storm.tuple.Tuple;
 public class PrintCount extends BaseRichBolt {
 
 	/**
-	 * 
+	 * Bolt to print the current count to the console
 	 */
 	private static final long serialVersionUID = -6133323709164892042L;
 
@@ -25,7 +25,7 @@ public class PrintCount extends BaseRichBolt {
 		String word = tuple.getString(0);
 		Object count = tuple.getValue(1);
 		
-		System.out.println(word +":" + count);
+		System.out.println(word +":" + count.toString());
 
 	}
 

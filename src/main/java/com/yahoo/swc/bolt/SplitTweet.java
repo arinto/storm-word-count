@@ -13,7 +13,7 @@ import backtype.storm.tuple.Values;
 public class SplitTweet extends BaseRichBolt {
 
 	/**
-	 * 
+	 * Bolt to split the tweets into words
 	 */
 	private static final long serialVersionUID = 3046647784643054989L;
 	private static final String REGEX_SPLIT = 

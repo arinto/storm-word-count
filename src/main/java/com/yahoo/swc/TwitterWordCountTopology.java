@@ -3,8 +3,7 @@ package com.yahoo.swc;
 import java.util.HashMap;
 
 import com.yahoo.swc.bolt.CountWord;
-import com.yahoo.swc.bolt.EwmaCountWord;
-import com.yahoo.swc.bolt.EfTimeCountWord;
+import com.yahoo.swc.bolt.ForwardDecayCountWord;
 import com.yahoo.swc.bolt.PrintCount;
 import com.yahoo.swc.bolt.SplitTweet;
 import com.yahoo.swc.spout.TwitterSampleSpout;
@@ -19,19 +18,24 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.utils.Utils;
 
+/*
+ *  Entry point for Storm word count program. Currently support two options
+ *  1. nrml. Normal mode, count without any decay function or weight
+ *  2. fedcount. Forward exponential decay count
+ * 
+ */
+
 public class TwitterWordCountTopology {
 	
 	private static final String NORMAL_MODE = "nrml";
-	private static final String EWMA_MODE = "ewma";
-	private static final String EF_TIME_MODE = "eftime";
+	private static final String FED_MODE = "fedcount";
 	
 	private static final HashMap<String, String> ALLOWED_OPTION = new HashMap<String, String>() {
 		private static final long serialVersionUID = -4689033609960231840L;
 
 		{
 			put(NORMAL_MODE, "for normal counting");
-			put(EWMA_MODE, "for EWMA");
-			put(EF_TIME_MODE, "for exponential forgetting w.r.t time");
+			put(FED_MODE, "for forward-exponential-decay count");
 		}
 	};
 		
@@ -65,18 +69,15 @@ public class TwitterWordCountTopology {
 				.shuffleGrouping(twitterSampleSpoutId);
 			
 		//use CountWord Bolt
-		//better code: use builder class :)
+		//better code: use builder class to build specific bolt
 		BaseRichBolt countWordBolt = null;
 		String countWordBoltId = null;
 		if(args[0].equals(NORMAL_MODE)){
 			countWordBolt = new CountWord();
 			countWordBoltId = "count_word";
-		}else if (args[0].equals(EWMA_MODE)){
-			countWordBolt = new EwmaCountWord();
-			countWordBoltId = "ewma_count_word";
-		}else if (args[0].equals(EF_TIME_MODE)){
-			countWordBolt = new EfTimeCountWord();
-			countWordBoltId = "ef_time_count_word";
+		}else if (args[0].equals(FED_MODE)){
+			countWordBolt = new ForwardDecayCountWord();
+			countWordBoltId = "fwd_decay_count_word";
 		}else{
 			System.out.println(args[0] + " is a valid option but not yet implemented");
 			return;
@@ -106,7 +107,7 @@ public class TwitterWordCountTopology {
 			LocalCluster cluster = new LocalCluster();
 			cluster.submitTopology(topologyName , conf, builder.createTopology());
 			
-			Utils.sleep(30*1000);
+			Utils.sleep(90*1000);
 			
 			cluster.killTopology(topologyName);
 			cluster.shutdown();			

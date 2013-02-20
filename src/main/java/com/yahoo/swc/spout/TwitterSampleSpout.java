@@ -19,11 +19,12 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 
+/**
+ *  Spout that get the Twitter sample stream and emit them
+ */
+
 public class TwitterSampleSpout extends BaseRichSpout {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -5878104600899840638L;
 	private SpoutOutputCollector _collector = null;
 	private LinkedBlockingQueue<Status> _statusQueue = null;

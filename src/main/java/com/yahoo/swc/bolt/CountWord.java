@@ -11,11 +11,14 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
+
+/**
+ *  Normal Count Word bolt. No decay function/weight is introduced in this implementation
+ */
+
 public class CountWord extends BaseRichBolt{
 
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = -4206746564598093461L;
 	private OutputCollector _outputCollector = null;
 	private Map<String, Integer> _counter = null;
