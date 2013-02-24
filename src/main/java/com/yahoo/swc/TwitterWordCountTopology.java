@@ -30,6 +30,14 @@ public class TwitterWordCountTopology {
 	private static final String NORMAL_MODE = "nrml";
 	private static final String FED_MODE = "fedcount";
 	
+	private static final String FED_MODE_ERROR_MSG = 
+			"TwitterWordCountTopology is in " +
+			"Forward Exponential Decay Mode" + 
+			"\nUsage \"TwitterWordCountTopology " +
+			"fedcount decay_alpha output_frequency\"\n" + 
+			"decay_alpha and output_frequency " +
+			"should be integer";
+	
 	private static final HashMap<String, String> ALLOWED_OPTION = new HashMap<String, String>() {
 		private static final long serialVersionUID = -4689033609960231840L;
 
@@ -53,6 +61,7 @@ public class TwitterWordCountTopology {
 			for(String key: ALLOWED_OPTION.keySet()){
 				System.out.println(key + ", " + ALLOWED_OPTION.get(key));
 			}
+			System.exit(-1);
 		}
 		
 		TopologyBuilder builder = new TopologyBuilder();
@@ -72,11 +81,31 @@ public class TwitterWordCountTopology {
 		//better code: use builder class to build specific bolt
 		BaseRichBolt countWordBolt = null;
 		String countWordBoltId = null;
+		int numArgument = 0;
 		if(args[0].equals(NORMAL_MODE)){
 			countWordBolt = new CountWord();
 			countWordBoltId = "count_word";
+			numArgument = 1;
 		}else if (args[0].equals(FED_MODE)){
-			countWordBolt = new ForwardDecayCountWord();
+			int tickFrequency = 0;
+			int decayAlpha = 0; 
+			numArgument = 3;
+			
+			if(args.length < 3){
+				System.out.println(FED_MODE_ERROR_MSG);
+				System.exit(-1);
+			}
+			
+			try {
+				decayAlpha = Integer.parseInt(args[1]);
+				tickFrequency = Integer.parseInt(args[2]);
+			} catch (NumberFormatException e) {
+				System.out.println("Error in parsing decay_alpha or output_frequency");
+				System.out.println(FED_MODE_ERROR_MSG);
+				System.exit(-1);
+			}
+
+			countWordBolt = new ForwardDecayCountWord(tickFrequency, decayAlpha);
 			countWordBoltId = "fwd_decay_count_word";
 		}else{
 			System.out.println(args[0] + " is a valid option but not yet implemented");
@@ -96,10 +125,10 @@ public class TwitterWordCountTopology {
 		Config conf = new Config();
 		conf.setDebug(false);
 		
-		if(args != null && args.length > 1){
+		if(args != null && args.length > numArgument){
 			conf.setNumWorkers(3);
 			
-			StormSubmitter.submitTopology(args[1], conf, builder.createTopology());
+			StormSubmitter.submitTopology(args[numArgument], conf, builder.createTopology());
 		}else{
 			conf.setMaxTaskParallelism(3);
 			

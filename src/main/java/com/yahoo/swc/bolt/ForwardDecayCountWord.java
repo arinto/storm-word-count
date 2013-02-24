@@ -28,12 +28,18 @@ import backtype.storm.utils.Time;
 public class ForwardDecayCountWord extends BaseRichBolt {
 
 	private static final long serialVersionUID = -7070759934301780768L;
-	private static final int TICK_FREQUENCY = 10; //10 seconds
-	private static final int DECAY_ALPHA = 10*1000; //10 seconds in mili-seconds
 	
+	private int _tickFrequency = 10; //10 seconds
+	private int _decayAlpha = 10*1000; //10 seconds in mili-seconds
 	private OutputCollector _outputCollector = null;
 	private HashMap<String, Double> _counter = null;
 	private long _landmark;
+	
+	//when constructor get messy, refactor this code to use Builder class
+	public ForwardDecayCountWord(int tickFrequencySecond, int decayAlpha){
+		_tickFrequency = tickFrequencySecond;
+		_decayAlpha = decayAlpha*1000;
+	}
 
 	
 	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context,
@@ -78,14 +84,14 @@ public class ForwardDecayCountWord extends BaseRichBolt {
 	public Map<String, Object> getComponentConfiguration(){
 		Config conf = new Config();
 		//setup Storm's tick
-		conf.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, TICK_FREQUENCY);
+		conf.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, _tickFrequency);
 		return conf;
 	}
 	
 	//monotonic non-decreasing function to calculate the decay
 	private double gFunction(long timeInMs){
 		//use exponential decay
-		double val = (1.0/DECAY_ALPHA)*(Long.valueOf(timeInMs - _landmark).doubleValue());
+		double val = (1.0/_decayAlpha)*(Long.valueOf(timeInMs - _landmark).doubleValue());
 		return Math.pow(Math.E, val);
 	}
 }
