@@ -87,7 +87,6 @@ public class TwitterSampleSpout extends BaseRichSpout {
 		};
 		
 		_twitterStream.addListener(listener);
-		_twitterStream.sample();
 	}
 
 	public void nextTuple() {
@@ -120,6 +119,16 @@ public class TwitterSampleSpout extends BaseRichSpout {
 		conf.setMaxTaskParallelism(1);
 		return conf;
 	}
+	
+	@Override
+	public void activate() {
+		_twitterStream.sample();		
+	};
+	
+	@Override
+	public void deactivate() {
+		_twitterStream.cleanUp();
+	};
 	
 	public long getLostStatusCounter(){
 		return _lostStatus;
