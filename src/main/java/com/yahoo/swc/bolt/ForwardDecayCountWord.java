@@ -3,6 +3,8 @@ package com.yahoo.swc.bolt;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.mutable.MutableDouble;
+
 import com.yahoo.swc.utils.TupleHelper;
 
 import backtype.storm.Config;
@@ -32,7 +34,7 @@ public class ForwardDecayCountWord extends BaseRichBolt {
 	private int _tickFrequency = 10; //10 seconds
 	private int _decayAlpha = 10*1000; //10 seconds in mili-seconds
 	private OutputCollector _outputCollector = null;
-	private HashMap<String, Double> _counter = null;
+	private HashMap<String, MutableDouble> _counter = null;
 	private long _landmark;
 	
 	//when constructor get messy, refactor this code to use Builder class
@@ -45,7 +47,7 @@ public class ForwardDecayCountWord extends BaseRichBolt {
 	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context,
 			OutputCollector collector) {
 		_outputCollector = collector;
-		_counter = new HashMap<String, Double>();
+		_counter = new HashMap<String, MutableDouble>();
 		_landmark = Time.currentTimeMillis();
 	}
 
@@ -58,20 +60,20 @@ public class ForwardDecayCountWord extends BaseRichBolt {
 			long currentTime = Time.currentTimeMillis();
 			double latestCount = 0.0;
 			double gFunctionCurrTime = gFunction(currentTime);
-			for (String word : _counter.keySet()) {
-				latestCount = (_counter.get(word)/gFunctionCurrTime);
-				_outputCollector.emit(new Values(word, latestCount));
+			for (Map.Entry<String, MutableDouble> entry: _counter.entrySet()){
+				latestCount = (entry.getValue().doubleValue()/gFunctionCurrTime);
+				_outputCollector.emit(new Values(entry.getKey(), latestCount));
 			}
 		} else {
 			// get the word and store the sigma_on_i(gFunction(ti-_landmark))
 			String word = input.getString(0);
-			Double count = _counter.get(word);
+			MutableDouble count = _counter.get(word);
 
 			if (count == null) {
-				count = Double.valueOf(0.0);
+				count = new MutableDouble();
 			}
 
-			count += gFunction(Time.currentTimeMillis());
+			count.add(gFunction(Time.currentTimeMillis()));
 			_counter.put(word, count);
 		}
 	}

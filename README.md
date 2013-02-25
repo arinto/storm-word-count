@@ -10,5 +10,5 @@ This application count the occurence of word in Twitter's sample stream. It curr
 To execute it, follow this step
  1. Setup the "storm-word-count/src/main/resources/twitter4j.properties" with your Twitter's Consumer secret, access token, access token secret and consumer key.
  2. If you want to execute the topology in local mode, execute using Eclipse's or your preferred IDE "execute" commands.
- 3. If you want to execute the topology in distributed mode (i.e in Storm cluster), you need to create the executable jar file by executing this following maven command: "mvn package" from project root directory. Find the resulting jar in project_root/target folder. Submit the jar which contains "cluster-executable" words in the jar name. 
+ 3. If you want to execute the topology in distributed mode (i.e in Storm cluster), you need to create the executable jar file by executing this following maven command: "mvn package" from project root directory. Find the resulting jar in project_root/target folder. Submit the jar which contains "jar-with-dependencies" words in the jar name. 
 

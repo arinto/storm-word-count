@@ -3,6 +3,8 @@ package com.yahoo.swc.bolt;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.mutable.MutableInt;
+
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -21,21 +23,21 @@ public class CountWord extends BaseRichBolt{
 	
 	private static final long serialVersionUID = -4206746564598093461L;
 	private OutputCollector _outputCollector = null;
-	private Map<String, Integer> _counter = null;
+	private Map<String, MutableInt> _counter = null;
 	
 	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context,
 			OutputCollector collector) {
 		_outputCollector = collector;
-		_counter = new HashMap<String, Integer>();
+		_counter = new HashMap<String, MutableInt>();
 	}
 
 	public void execute(Tuple input) {		
 		String word = input.getString(0);
-		Integer count = _counter.get(word);
+		MutableInt count = _counter.get(word);
 		if (count == null) {
-			count = 0;
+			count = new MutableInt();				
 		}
-		count++;
+		count.increment();
 		_counter.put(word, count);
 		_outputCollector.emit(new Values(word, count));
 	}
