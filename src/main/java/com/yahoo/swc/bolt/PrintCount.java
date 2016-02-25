@@ -17,7 +17,7 @@ public class PrintCount extends BaseRichBolt {
 
 	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context,
 			OutputCollector collector) {
-		// do nothing
+		System.out.printf("taskindex: %d%n", context.getThisTaskIndex());
 
 	}
 

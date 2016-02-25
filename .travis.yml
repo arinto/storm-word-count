@@ -3,3 +3,9 @@ jdk:
     - oraclejdk7
     - openjdk7
     - openjdk6
+install: mvn install -DskipTests=true
+script: mvn package test
+notifications:
+  email:
+  on_success: never
+  on_failure: change

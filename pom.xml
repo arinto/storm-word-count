@@ -5,12 +5,6 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>storm-word-count</name>
   <description>Word Counting Application using Twitter Storm</description>
-  <repositories>
-  	<repository>
-  		<id>clojars</id>
-  		<url>http://clojars.org/repo/</url>
-  	</repository>
-  </repositories>
   <dependencies>
   	<dependency>
   		<groupId>org.twitter4j</groupId>
@@ -18,9 +12,9 @@
   		<version>3.0.3</version>
   	</dependency>
   	<dependency>
-  		<groupId>storm</groupId>
-  		<artifactId>storm</artifactId>
-  		<version>0.8.2</version>
+  		<groupId>org.apache.storm</groupId>
+  		<artifactId>storm-core</artifactId>
+  		<version>0.9.6</version>
   		<scope>provided</scope>
   	</dependency>
   	<dependency>
@@ -36,6 +30,14 @@
   </dependencies>
 	<build>
 		<plugins>
+			<plugin>
+        		<artifactId>maven-compiler-plugin</artifactId>
+        		<version>3.1</version>
+        		<configuration>
+          			<source>1.8</source>
+          			<target>1.8</target>
+        		</configuration>
+      		</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.4</version>
